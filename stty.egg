@@ -1,8 +1,15 @@
+;;;; stty.egg -*- Scheme -*-
+; vim:set filetype=scheme:
+
 (
+ (version "0.3")
+ (synopsis "stty-style interface to termios")
  (license "BSD")
  (category io)
+ (components  (extension stty))
+ (component-options
+   (csc-options "-O3" "-d1"))
  (dependencies foreigners srfi-69)
  (author "Alex Shinn")
  (maintainer "Erik Falor")
- (synopsis "stty-style interface to termios")
 )
