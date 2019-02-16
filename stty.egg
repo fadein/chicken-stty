@@ -1,0 +1,8 @@
+(
+ (license "BSD")
+ (category io)
+ (dependencies foreigners srfi-69)
+ (author "Alex Shinn")
+ (maintainer "Erik Falor")
+ (synopsis "stty-style interface to termios")
+)

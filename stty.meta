@@ -1,0 +1,12 @@
+;;; stty.meta -*- Scheme -*-
+
+(
+ (egg "stty.egg")
+ (needs setup-helper foreigners srfi-69)
+ (synopsis "stty-style interface to termios")
+ (category io)
+ (license "BSD")
+ (author "Alex Shinn")
+ (doc-from-wiki)
+ (files "stty.release-info" "stty.meta" "stty.setup" "stty.scm")
+)
