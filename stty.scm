@@ -345,7 +345,7 @@
 ;;    (xcase    local    ,XCASE)   ; with icanon, escape with `\' for uppercase characters
 
    ;; combination settings
-   (LCASE    combine  (lcase))
+   ;; (LCASE    combine  (lcase))
    (cbreak   combine  (not icanon))
    (cooked   combine  (brkint ignpar istrip icrnl ixon opost isig icanon))
                                         ; also eof and eol characters
@@ -357,7 +357,7 @@
    (ek       combine  ()) ; erase and kill characters to their default values
    (evenp    combine  (parenb (not parodd) cs7))
    ;;(-evenp combine  #f) ; same as -parenb cs8
-   (lcase    combine  (xcase iuclc olcuc))
+   ;; (lcase    combine  (xcase iuclc olcuc))
    (litout   combine  (cs8 (not parenb istrip opost)))
    ;;(-litout  combine  #f) ; same as parenb istrip opost cs7
    (nl       combine  (not icrnl onlcr))
@@ -366,8 +366,21 @@
    (parity   combine  (evenp)) ; same as [-]evenp
    (pass8    combine  (cs8 (not parenb istrip)))
    ;;(-pass8   combine  #f) ; same as parenb istrip cs7
-   (raw      combine  (not ignbrk brkint ignpar parmrk
-                           inpck istrip inlcr igncr icrnl))
+   (raw      combine  (cond-expand
+                        ((or freebsd netbsd openbsd dragonfly macosx)
+                         (cs8 cread
+                              ignbrk
+                              (not imaxbel ixoff inpck brkint parmrk istrip
+                                   inclr igncr icrnl ixon ignpar opost echo
+                                   echoe echok echonl icanon isig noflsh
+                                   tostop pendin csize parenb)))
+                        (linux
+                         (not ignbrk brkint ignpar parmrk inpck istrip inlcr
+                              igncr icrnl ixon ixoff icanon opost isig
+                              ixany imaxbel))
+                        (else
+                         (not ignbrk brkint ignpar parmrk
+                           inpck istrip inlcr igncr icrnl))))
    (ixon     combine  (ixoff ixany imaxbel opost isig icanon)) ;; xcase iuclc
    ;;(time     combine  #f) ; 0
    ;;(-raw     combine  #f) ; same as cooked
