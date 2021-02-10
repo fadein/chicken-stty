@@ -366,21 +366,21 @@
    (parity   combine  (evenp)) ; same as [-]evenp
    (pass8    combine  (cs8 (not parenb istrip)))
    ;;(-pass8   combine  #f) ; same as parenb istrip cs7
-   (raw      combine  (cond-expand
-                        ((or freebsd netbsd openbsd dragonfly macosx)
-                         (cs8 cread
-                              ignbrk
-                              (not imaxbel ixoff inpck brkint parmrk istrip
-                                   inclr igncr icrnl ixon ignpar opost echo
-                                   echoe echok echonl icanon isig noflsh
-                                   tostop pendin csize parenb)))
-                        (linux
-                         (not ignbrk brkint ignpar parmrk inpck istrip inlcr
-                              igncr icrnl ixon ixoff icanon opost isig
-                              ixany imaxbel))
-                        (else
-                         (not ignbrk brkint ignpar parmrk
-                           inpck istrip inlcr igncr icrnl))))
+   (raw      combine  ,(cond-expand
+                         ((or freebsd netbsd openbsd dragonfly macosx)
+                          '(cs8 cread
+                                ignbrk
+                                (not imaxbel ixoff inpck brkint parmrk istrip
+                                     inclr igncr icrnl ixon ignpar opost echo
+                                     echoe echok echonl icanon isig noflsh
+                                     tostop pendin csize parenb)))
+                         (linux
+                          '(not ignbrk brkint ignpar parmrk inpck istrip inlcr
+                                igncr icrnl ixon ixoff icanon opost isig
+                                ixany imaxbel))
+                         (else
+                          '(not ignbrk brkint ignpar parmrk
+                                inpck istrip inlcr igncr icrnl))))
    (ixon     combine  (ixoff ixany imaxbel opost isig icanon)) ;; xcase iuclc
    ;;(time     combine  #f) ; 0
    ;;(-raw     combine  #f) ; same as cooked
