@@ -76,8 +76,6 @@
   term-attrs-cflag term-attrs-cflag-set!
   term-attrs-lflag term-attrs-lflag-set!
   term-attrs-cc term-attrs-cc-set!
-  term-attrs-ispeed term-attrs-ispeed-set!
-  term-attrs-ospeed term-attrs-ospeed-set!
   TCSANOW TCSADRAIN TCSAFLUSH)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -94,7 +92,13 @@
       (chicken file posix)
       (chicken fixnum)
       (chicken foreign)
+      (chicken module)
       foreigners)))
+
+#+HAVE_TERMIOS_SPEED_MEMBERS
+  (export
+    term-attrs-ispeed term-attrs-ispeed-set!
+    term-attrs-ospeed term-attrs-ospeed-set!)
 
 (declare (foreign-declare "#include <termios.h>\n"))
 (declare (foreign-declare "typedef struct termios struct_termios;\n"))
@@ -107,7 +111,9 @@
   (unsigned-long c_cflag term-attrs-cflag term-attrs-cflag-set!)
   (unsigned-long c_lflag term-attrs-lflag term-attrs-lflag-set!)
   (unsigned-char (c_cc 22) term-attrs-cc term-attrs-cc-set!)
+  #+HAVE_TERMIOS_SPEED_MEMBERS
   (unsigned-long c_ispeed term-attrs-ispeed term-attrs-ispeed-set!)
+  #+HAVE_TERMIOS_SPEED_MEMBERS
   (unsigned-long c_ospeed term-attrs-ospeed term-attrs-ospeed-set!)
   )
 

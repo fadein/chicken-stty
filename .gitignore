@@ -3,3 +3,4 @@
 *.o
 *.import.scm
 *.link
+stty-config.scm

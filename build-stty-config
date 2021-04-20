@@ -1,0 +1,20 @@
+#!/bin/sh
+CC="${CC:-cc}"
+trap 'rm -f conftest.c conftest.o' exit
+
+exec > stty-config.scm
+printf "(import (chicken platform))\n"
+
+cat > conftest.c <<'EOF'
+#include <termios.h>
+void foo(struct termios *t) {
+	t->c_ospeed = 300;
+}
+EOF
+
+"${CC}" -c -o conftest.o conftest.c > /dev/null 2>&1
+if [ "$?" -eq 0 ] ; then
+  printf "(register-feature! 'HAVE_TERMIOS_SPEED_MEMBERS)\n"
+else
+  printf "(unregister-feature! 'HAVE_TERMIOS_SPEED_MEMBERS)\n"
+fi

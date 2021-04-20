@@ -6,10 +6,13 @@
  (synopsis "stty-style interface to termios")
  (license "BSD")
  (category io)
- (components  (extension stty))
- (component-options
-   (csc-options "-O3" "-d1"))
- (dependencies foreigners srfi-69)
+ (components (generated-source-file stty-config
+               (custom-build "build-stty-config"))
+   (extension stty
+     (source "stty.scm")
+     (component-dependencies stty-config)
+     (csc-options "-X" "stty-config.scm" "-X" "feature-test-syntax" "-O3" "-d1")))
+ (dependencies feature-test foreigners srfi-69)
  (author "Alex Shinn")
  (maintainer "Erik Falor")
 )
