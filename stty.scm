@@ -124,6 +124,38 @@
 (define TCSAFLUSH TCSAFLUSH_)
 ;; (define TCSASOFT TCSASOFT_)
 
+(define-foreign-variable B0 unsigned-long)
+(define-foreign-variable B50 unsigned-long)
+(define-foreign-variable B75 unsigned-long)
+(define-foreign-variable B110 unsigned-long)
+(define-foreign-variable B134 unsigned-long)
+(define-foreign-variable B150 unsigned-long)
+(define-foreign-variable B200 unsigned-long)
+(define-foreign-variable B300 unsigned-long)
+(define-foreign-variable B600 unsigned-long)
+(define-foreign-variable B1200 unsigned-long)
+(define-foreign-variable B1800 unsigned-long)
+(define-foreign-variable B2400 unsigned-long)
+(define-foreign-variable B4800 unsigned-long)
+(define-foreign-variable B9600 unsigned-long)
+(define-foreign-variable B19200 unsigned-long)
+(define-foreign-variable B38400 unsigned-long)
+(define-foreign-variable B57600 unsigned-long)
+(define-foreign-variable B115200 unsigned-long)
+(define-foreign-variable B230400 unsigned-long)
+(define-foreign-variable B460800 unsigned-long)
+(define-foreign-variable B500000 unsigned-long)
+(define-foreign-variable B576000 unsigned-long)
+(define-foreign-variable B921600 unsigned-long)
+(define-foreign-variable B1000000 unsigned-long)
+(define-foreign-variable B1152000 unsigned-long)
+(define-foreign-variable B1500000 unsigned-long)
+(define-foreign-variable B2000000 unsigned-long)
+(define-foreign-variable B2500000 unsigned-long)
+(define-foreign-variable B3000000 unsigned-long)
+(define-foreign-variable B3500000 unsigned-long)
+(define-foreign-variable B4000000 unsigned-long)
+
 (define-foreign-variable IGNBRK unsigned-long)
 (define-foreign-variable BRKINT unsigned-long)
 (define-foreign-variable IGNPAR unsigned-long)
@@ -223,6 +255,75 @@
 (define (set-terminal-attributes! port action t)
   (set-term-attrs! (if (port? port) (port->fileno port) port) action t))
 
+(define (baud-to-flag x)
+  (cond
+    ((= x 0) B0)
+    ((= x 50) B50)
+    ((= x 75) B75)
+    ((= x 110) B110)
+    ((= x 134) B134)
+    ((= x 150) B150)
+    ((= x 200) B200)
+    ((= x 300) B300)
+    ((= x 600) B600)
+    ((= x 1200) B1200)
+    ((= x 1800) B1800)
+    ((= x 2400) B2400)
+    ((= x 4800) B4800)
+    ((= x 9600) B9600)
+    ((= x 19200) B19200)
+    ((= x 38400) B38400)
+    ((= x 57600) B57600)
+    ((= x 115200) B115200)
+    ((= x 230400) B230400)
+    ((= x 460800) B460800)
+    ((= x 500000) B500000)
+    ((= x 576000) B576000)
+    ((= x 921600) B921600)
+    ((= x 1000000) B1000000)
+    ((= x 1152000) B1152000)
+    ((= x 1500000) B1500000)
+    ((= x 2000000) B2000000)
+    ((= x 2500000) B2500000)
+    ((= x 3000000) B3000000)
+    ((= x 3500000) B3500000)
+    ((= x 4000000) B4000000)
+    (else (error "INVALID BAUDRATE"))))
+
+(define (flag-to-baud x)
+  (cond
+    ((= x B0) 0)
+    ((= x B50) 50)
+    ((= x B75) 75)
+    ((= x B110) 110)
+    ((= x B134) 134)
+    ((= x B150) 150)
+    ((= x B200) 200)
+    ((= x B300) 300)
+    ((= x B600) 600)
+    ((= x B1200) 1200)
+    ((= x B1800) 1800)
+    ((= x B2400) 2400)
+    ((= x B4800) 4800)
+    ((= x B9600) 9600)
+    ((= x B19200) 19200)
+    ((= x B38400) 38400)
+    ((= x B57600) 57600)
+    ((= x B115200) 115200)
+    ((= x B230400) 230400)
+    ((= x B460800) 460800)
+    ((= x B500000) 500000)
+    ((= x B576000) 576000)
+    ((= x B921600) 921600)
+    ((= x B1000000) 1000000)
+    ((= x B1152000) 1152000)
+    ((= x B1500000) 1500000)
+    ((= x B2000000) 2000000)
+    ((= x B2500000) 2500000)
+    ((= x B3000000) 3000000)
+    ((= x B3500000) 3500000)
+    ((= x B4000000) 4000000)
+    (else (error "INVALID BAUDRATE"))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; symbolic representation of attributes
 
@@ -256,14 +357,16 @@
    ;; special settings
    (cols     special  #f) ; tell the kernel that the terminal has N columns
    (columns  special  #f) ; same as cols N
-   (ispeed   special  #f) ; set the input speed to N
    (line     special  #f) ; use line discipline N
    (min      special  #f) ; with -icanon, set N characters minimum for a completed read
-   (ospeed   special  #f) ; set the output speed to N
    (rows     special  #f) ; tell the kernel that the terminal has N rows
    (size     special  #f) ; print the number of rows and columns according to the kernel
    (speed    special  #f) ; print the terminal speed
    (time     special  #f) ; with -icanon, set read timeout of N tenths of a second
+
+   ;; baudrate settings
+   (ispeed   baudrate  #f) ; set the input speed to N
+   (ospeed   baudrate  #f) ; set the output speed to N
 
    ;; control settings
    (clocal   control  ,CLOCAL)  ; disable modem control signals
@@ -403,26 +506,29 @@
                        (car args)
                        (current-input-port)))
              (attr (get-terminal-attributes port))
+             (ispeed (term-attrs-ispeed attr))
+             (ospeed (term-attrs-ospeed attr))
              (iflag (term-attrs-iflag attr))
              (oflag (term-attrs-oflag attr))
              (cflag (term-attrs-cflag attr))
              (lflag (term-attrs-lflag attr)))
-
     ;; parse change requests
     (let lp ((lst (if (and (pair? args) (port? (car args))) (cdr args) args))
              (flag #t))
       (cond
        ((pair? lst)
-        (let ((command (car lst)))
+        (let* ((command (car lst))
+               (x (hash-table-ref/default stty-lookup command #f))
+               (type (if (pair? x) (car x) #f)))
           (cond
            ((pair? command) ;; recurse on sub-expr
             (lp command flag)
             (lp (cdr lst) flag))
+           ((eq? type 'baudrate) ;; baudrates pass an argument, don't process the rest of lst
+            (eval (list 'set! command (baud-to-flag (cadr lst)))))
            ((eq? command 'not) ;; toggle current setting
             (lp (cdr lst) (not flag)))
            (else
-            (let* ((x (hash-table-ref/default stty-lookup command #f))
-                   (type (if (pair? x) (car x) #f)))
               (case type
                 ((input)
                  (if flag
@@ -454,13 +560,15 @@
                  (lp (cdr lst) flag))
                 (else
                  (warning "unknown stty command" command)
-                 (lp (cdr lst) flag))))))))))
+                 (lp (cdr lst) flag)))))))))
 
     ;; set new values
     (term-attrs-iflag-set! attr iflag)
     (term-attrs-oflag-set! attr oflag)
     (term-attrs-cflag-set! attr cflag)
     (term-attrs-lflag-set! attr lflag)
+    (term-attrs-ispeed-set! attr ispeed)
+    (term-attrs-ospeed-set! attr ospeed)
     (set-terminal-attributes! port TCSANOW attr)
     (free-term-attrs attr)))
 
