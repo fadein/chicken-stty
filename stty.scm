@@ -107,8 +107,6 @@
   (unsigned-long c_cflag term-attrs-cflag term-attrs-cflag-set!)
   (unsigned-long c_lflag term-attrs-lflag term-attrs-lflag-set!)
   (unsigned-char (c_cc 22) term-attrs-cc term-attrs-cc-set!)
-  (unsigned-long c_ispeed term-attrs-ispeed term-attrs-ispeed-set!)
-  (unsigned-long c_ospeed term-attrs-ospeed term-attrs-ospeed-set!)
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -251,6 +249,22 @@
 (define set-term-attrs!
   (foreign-lambda* int ((int fd) (int action) (c-pointer t))
     "return(tcsetattr(fd, action, (struct termios*) t));"))
+
+(define term-attrs-ispeed
+  (foreign-lambda* int ((c-pointer t))
+    "return(cfgetispeed((struct termios*) t));"))
+
+(define term-attrs-ispeed-set!
+  (foreign-lambda* int ((c-pointer t) (int speed))
+    "return(cfsetispeed((struct termios*) t, speed));"))
+
+(define term-attrs-ospeed
+  (foreign-lambda* int ((c-pointer t))
+    "return(cfgetospeed((struct termios*) t));"))
+
+(define term-attrs-ospeed-set!
+  (foreign-lambda* int ((c-pointer t) (int speed))
+    "return(cfsetospeed((struct termios*) t, speed));"))
 
 (define (set-terminal-attributes! port action t)
   (set-term-attrs! (if (port? port) (port->fileno port) port) action t))
@@ -525,7 +539,9 @@
             (lp command flag)
             (lp (cdr lst) flag))
            ((eq? type 'baudrate) ;; baudrates pass an argument, don't process the rest of lst
-            (eval (list 'set! command (baud-to-flag (cadr lst)))))
+	    (case command
+	      ((ispeed) (set! ispeed (baud-to-flag (cadr lst))))
+	      ((ospeed) (set! ospeed (baud-to-flag (cadr lst))))))
            ((eq? command 'not) ;; toggle current setting
             (lp (cdr lst) (not flag)))
            (else
