@@ -3,3 +3,4 @@
 *.o
 *.import.scm
 *.link
+salmonella.log
