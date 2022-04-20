@@ -101,6 +101,7 @@ You shouldn't need to use this.
 
 === Version history
 
+; 0.6 : Use posix accessors to access ispeed and ospeed termios members
 ; 0.5 : Fix bsd/linux commit
 ; 0.4 : Remove unusable flags, conform to bsd/linux stty (thanks, dieggsy!)
 ; 0.3 : Ported to CHICKEN 5

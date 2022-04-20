@@ -2,6 +2,7 @@
 ;;
 ;; Copyright (c) 2007-2016 Alex Shinn.  All rights reserved.
 ;; BSD-style license: http://synthcode.com/license.txt
+;; Updates Copyright (c) 2016-2022 Erik Falor.  All rights reserved.
 
 ;;;;; High-level interface
 ;;

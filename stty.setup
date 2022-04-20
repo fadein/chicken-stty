@@ -1,7 +1,0 @@
-
-(compile -shared -O2 -j stty stty.scm)
-(compile -shared -O2 stty.import.scm)
-
-(install-extension 'stty
-  '("stty.so" "stty.import.so")
-  '((version "0.2.6")))
