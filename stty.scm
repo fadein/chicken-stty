@@ -6,9 +6,9 @@
 
 ;;;;; High-level interface
 ;;
-;; Procedure: (stty [port] settings ...)
+;; Procedure: (stty [port-or-fd] settings ...)
 ;;
-;;   Sets the terminal attributes for PORT (defaulting to
+;;   Sets the terminal attributes for PORT-OR-FD (defaulting to
 ;;   current-input-port) according to the SETTINGS, which should be a
 ;;   list of symbols corresponding to modes in the stty(1) man page,
 ;;   or one or more symbols wrapped in a (not ...) list.
@@ -516,8 +516,9 @@
 ;; high-level interface
 
 (define (stty . args)
-
-  (and-let* ((port (if (and (pair? args) (port? (car args)))
+  (define (port-or-fileno? arg)
+    (or (port? arg) (fixnum? arg)))
+  (and-let* ((port (if (and (pair? args) (port-or-fileno? (car args)))
                        (car args)
                        (current-input-port)))
              (attr (get-terminal-attributes port))
@@ -528,7 +529,7 @@
              (cflag (term-attrs-cflag attr))
              (lflag (term-attrs-lflag attr)))
     ;; parse change requests
-    (let lp ((lst (if (and (pair? args) (port? (car args))) (cdr args) args))
+    (let lp ((lst (if (and (pair? args) (port-or-fileno? (car args))) (cdr args) args))
              (flag #t))
       (cond
        ((pair? lst)
