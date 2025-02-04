@@ -19,12 +19,12 @@ stty-style interface to termios
 
 ==== stty
 
-<procedure>(stty [port] settings ...)</procedure>
+<procedure>(stty [port-or-fd] settings ...)</procedure>
 
-Sets the terminal attributes for PORT (defaulting to
-current-input-port) according to the SETTINGS, which should be a
-list of symbols corresponding to modes in the stty(1) man page,
-or one or more symbols wrapped in a (not ...) list.
+Sets the terminal attributes for PORT (defaulting to current-input-port; a
+fixnum representing a valid file descriptor is also accepted) according to
+the SETTINGS, which should be a list of symbols corresponding to modes in
+the stty(1) man page, or one or more symbols wrapped in a (not ...) list.
 
 To enable a character setting, use a list of the setting name
 followed by the character (or #f to disable), as in
@@ -101,6 +101,7 @@ You shouldn't need to use this.
 
 === Version history
 
+; 0.7 : A fixnum representing a valid file descriptor is also accepted (thanks, wasamasa!)
 ; 0.6 : Use posix accessors to access ispeed and ospeed termios members
 ; 0.5 : Fix bsd/linux commit
 ; 0.4 : Remove unusable flags, conform to bsd/linux stty (thanks, dieggsy!)

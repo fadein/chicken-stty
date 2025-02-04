@@ -2,7 +2,7 @@
 ; vim:set filetype=scheme:
 
 (
- (version "0.6")
+ (version "0.7")
  (synopsis "stty-style interface to termios")
  (license "BSD")
  (category io)
