@@ -157,7 +157,7 @@
     (define-foreign-variable B2500000 unsigned-long)
     (define-foreign-variable B3000000 unsigned-long)
     (define-foreign-variable B3500000 unsigned-long)
-    (define-foreign-variable B4000000 unsigned-long))
+    (define-foreign-variable B4000000 unsigned-long)))
 
 (define-foreign-variable IGNBRK unsigned-long)
 (define-foreign-variable BRKINT unsigned-long)
