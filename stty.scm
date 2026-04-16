@@ -391,8 +391,8 @@
         ((= x B2500000) 2500000)
         ((= x B3000000) 3000000)
         ((= x B3500000) 3500000)
-        ((= x B4000000) 4000000)))
-        (else (error "INVALID BAUDRATE"))))
+        ((= x B4000000) 4000000)
+        (else (error "INVALID BAUDRATE"))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; symbolic representation of attributes
 
