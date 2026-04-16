@@ -101,6 +101,8 @@ You shouldn't need to use this.
 
 === Version history
 
+; 0.8.1 : fixed another misplaced parentheses
+; 0.8 : Add cond-expanded flag-to-baud/baud-to-flag to reference only existing baud defines on macosx
 ; 0.7 : A fixnum representing a valid file descriptor is also accepted (thanks, wasamasa!)
 ; 0.6 : Use posix accessors to access ispeed and ospeed termios members
 ; 0.5 : Fix bsd/linux commit
