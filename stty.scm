@@ -559,7 +559,6 @@
                           '(not ignbrk brkint ignpar parmrk inpck istrip inlcr
                                 igncr icrnl ixon icanon opost isig
                                 echo echoe echonl iexten))))
-   (ixon     combine  (ixoff ixany imaxbel opost isig icanon)) ;; xcase iuclc
    ;;(time     combine  #f) ; 0
    ;;(-raw     combine  #f) ; same as cooked
    (sane     combine  (cread brkint icrnl imaxbel opost onlcr
