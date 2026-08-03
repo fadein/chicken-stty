@@ -61,7 +61,7 @@ The following settings are supported:
      opost ospeed tab0 tab1 tab2 tab3 tabs crterase crtkill ctlecho
      echo echoctl echoe echoke echonl echoprt icanon iexten isig
      noflsh prterase tostop xcase eof eol eol2 erase intr kill lnext
-     quit rprnt start stop susp werase raw sane
+     quit rprnt start stop susp werase min time raw sane
 
 ==== with-stty
 
