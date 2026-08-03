@@ -26,7 +26,7 @@
 ;;      tab0 tab1 tab2 tab3 tabs crterase crtkill ctlecho echo echoctl
 ;;      echoe echoke echonl echoprt icanon iexten isig noflsh prterase
 ;;      tostop xcase eof eol eol2 erase intr kill lnext quit rprnt
-;;      start stop susp werase raw sane
+;;      start stop susp werase min time raw sane
 
 ;; Procedure: (with-stty '(setting ...) thunk)
 ;;
@@ -100,6 +100,9 @@
 (declare (foreign-declare "#include <termios.h>\n"))
 (declare (foreign-declare "typedef struct termios struct_termios;\n"))
 
+;; Use the platform c_cc size for accessor bounds.
+(define-foreign-variable NCCS int "NCCS")
+
 (define-foreign-record-type (term-attrs struct_termios)
   (constructor: make-term-attrs)
   (destructor: free-term-attrs)
@@ -107,7 +110,7 @@
   (unsigned-long c_oflag term-attrs-oflag term-attrs-oflag-set!)
   (unsigned-long c_cflag term-attrs-cflag term-attrs-cflag-set!)
   (unsigned-long c_lflag term-attrs-lflag term-attrs-lflag-set!)
-  (unsigned-char (c_cc 22) term-attrs-cc term-attrs-cc-set!)
+  (unsigned-char (c_cc NCCS) term-attrs-cc term-attrs-cc-set!)
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -234,6 +237,8 @@
 (define-foreign-variable VLNEXT unsigned-long)
 (define-foreign-variable VREPRINT unsigned-long)
 (define-foreign-variable VSTATUS unsigned-long)
+(define-foreign-variable VMIN unsigned-long)
+(define-foreign-variable VTIME unsigned-long)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; basic interface
@@ -427,11 +432,11 @@
    (cols     special  #f) ; tell the kernel that the terminal has N columns
    (columns  special  #f) ; same as cols N
    (line     special  #f) ; use line discipline N
-   (min      special  #f) ; with -icanon, set N characters minimum for a completed read
+   (min      cc       ,VMIN)  ; with -icanon, min bytes for a completed read
    (rows     special  #f) ; tell the kernel that the terminal has N rows
    (size     special  #f) ; print the number of rows and columns according to the kernel
    (speed    special  #f) ; print the terminal speed
-   (time     special  #f) ; with -icanon, set read timeout of N tenths of a second
+   (time     cc       ,VTIME) ; with -icanon, read timeout in tenths of a second
 
    ;; baudrate settings
    (ispeed   baudrate  #f) ; set the input speed to N
@@ -509,7 +514,7 @@
    (echonl   local    ,ECHONL)  ; echo newline even if not echoing other characters
    (echoprt  local    ,ECHOPRT) ; echo erased characters backward, between `\' and '/'
    (icanon   local    ,ICANON)  ; enable erase, kill, werase, and rprnt special characters
-;;   (iexten   local    ,IEXTEN)  ; enable non-POSIX special characters
+   (iexten   local    ,IEXTEN)  ; enable non-POSIX special characters
    (isig     local    ,ISIG)    ; enable interrupt, quit, and suspend special characters
    (noflsh   local    ,NOFLSH)  ; disable flushing after interrupt and quit special characters
    (prterase local    ,ECHOPRT) ; same as [-]echoprt
@@ -549,10 +554,11 @@
                          (linux
                           '(not ignbrk brkint ignpar parmrk inpck istrip inlcr
                                 igncr icrnl ixon ixoff icanon opost isig
-                                ixany imaxbel))
+                                ixany imaxbel echo echoe echonl iexten))
                          (else
-                          '(not ignbrk brkint ignpar parmrk
-                                inpck istrip inlcr igncr icrnl))))
+                          '(not ignbrk brkint ignpar parmrk inpck istrip inlcr
+                                igncr icrnl ixon icanon opost isig
+                                echo echoe echonl iexten))))
    (ixon     combine  (ixoff ixany imaxbel opost isig icanon)) ;; xcase iuclc
    ;;(time     combine  #f) ; 0
    ;;(-raw     combine  #f) ; same as cooked
@@ -626,6 +632,9 @@
                  (error "special settings not yet supported"))
                 ((char)
                  (term-attrs-cc-set! attr (cadr x) (or (cadr lst) #\nul))
+                 (lp (cddr lst) flag))
+                ((cc)
+                 (term-attrs-cc-set! attr (cadr x) (integer->char (cadr lst)))
                  (lp (cddr lst) flag))
                 ((combine) ;; recurse on def of this command
                  (lp (cadr x) flag)
