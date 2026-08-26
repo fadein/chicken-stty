@@ -1,0 +1,113 @@
+# stty
+
+stty-style interface to termios
+
+## Requirements
+
+*   srfi-69
+*   foreigners
+
+
+## High-level interface
+
+### stty
+
+```scheme
+(stty [port-or-fd] settings ...)
+```
+
+Sets the terminal attributes for `PORT` (defaulting to current-input-port; a
+fixnum representing a valid file descriptor is also accepted) according to
+the `SETTINGS`, which should be a list of symbols corresponding to modes in
+the stty(1) man page, or one or more symbols wrapped in a (not ...) list.
+
+To enable a character setting, use a list of the setting name
+followed by the character (or `#f` to disable), as in
+
+```scheme
+(stty '(erase #\delete))
+```
+
+To set a baudrate, set the `ispeed` and `ospeed` settings in the
+same way, as in
+
+```scheme
+(define (set-baudrate! port baudrate)
+  (stty port `((ispeed ,baudrate) (ospeed ,baudrate))))
+
+(let ((S0 (file-open "/dev/ttyS0" (+ open/rdwr open/excl))))
+  ;;set baudrate to 9600
+  (set-baudrate! S0 9600)
+  ;;send some stuff
+  (write "HELLO AT 9600" S0)
+  (flush-output S0)
+  ;;set baudrate to 38400
+  (set-baudrate! S0 38400)
+  ;;send some stuff
+  (write "HELLO AT 38400" S0)
+  (flush-output S0))
+```
+
+The following settings are supported:
+
+    clocal cread crtscts cs5 cs6 cs7 cs8 cstopb hup hupcl parenb
+    parodd brkint icrnl ignbrk igncr ignpar imaxbel inpck ispeed
+    istrip ixany ixoff ixon parmrk tandem ocrnl onlcr onlret onocr
+    opost ospeed tab0 tab1 tab2 tab3 tabs crterase crtkill ctlecho
+    echo echoctl echoe echoke echonl echoprt icanon iexten isig
+    noflsh prterase tostop xcase eof eol eol2 erase intr kill lnext
+    quit rprnt start stop susp werase min time raw sane
+
+### with-stty
+
+```scheme
+(with-stty '(setting ...) thunk)
+```
+
+Sets the terminal attributes with STTY, evaluates `THUNK`, then
+restores the original attributes and returns the value from
+`THUNK`.
+
+Example:
+
+```scheme
+(define (read-password prompt)
+  (display prompt)
+  (with-stty '(not echo) read-line))
+```
+
+
+## Low-level interface
+
+You shouldn't need to use this.
+
+```scheme
+(get-terminal-attributes [port-or-fd])
+(set-terminal-attributes! port-or-fd action attrs)
+
+(make-term-attrs)
+(free-term-attrs attrs)
+(term-attrs-iflag attrs)
+(term-attrs-oflag attrs)
+(term-attrs-cflag attrs)
+(term-attrs-lflag attrs)
+(term-attrs-cc attrs i)
+(term-attrs-iflag-set! attrs int)
+(term-attrs-oflag-set! attrs int)
+(term-attrs-cflag-set! attrs int)
+(term-attrs-lflag-set! attrs int)
+(term-attrs-cc-set! attrs i char)
+```
+
+## Version history
+
+-   0.9.1 : Ported to CHICKEN 6
+-   0.9 : Improve raw serial configuration, make ixon control the IXON flag (thanks, @crzcrz!)
+-   0.8.1 : Fixed another misplaced parentheses
+-   0.8 : Add cond-expanded flag-to-baud/baud-to-flag to reference only existing baud defines on macosx
+-   0.7 : A fixnum representing a valid file descriptor is also accepted (thanks, wasamasa!)
+-   0.6 : Use posix accessors to access ispeed and ospeed termios members
+-   0.5 : Fix bsd/linux commit
+-   0.4 : Remove unusable flags, conform to bsd/linux stty (thanks, dieggsy!)
+-   0.3 : Ported to CHICKEN 5
+-   0.2.2 : Bugfix release

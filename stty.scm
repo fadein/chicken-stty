@@ -86,7 +86,7 @@
 (cond-expand
   (chicken-4
     (import scheme chicken extras posix srfi-69 foreign foreigners))
-  (chicken-5
+  ((or chicken-5 chicken-6)
     (import
       scheme
       srfi-69
