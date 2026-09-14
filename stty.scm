@@ -86,9 +86,20 @@
 (cond-expand
   (chicken-4
     (import scheme chicken extras posix srfi-69 foreign foreigners))
-  ((or chicken-5 chicken-6)
+  (chicken-5
     (import
       scheme
+      srfi-69
+      (chicken base)
+      (chicken bitwise)
+      (chicken file posix)
+      (chicken fixnum)
+      (chicken foreign)
+      foreigners))
+  (chicken-6
+    (import
+      scheme
+      (scheme base)
       srfi-69
       (chicken base)
       (chicken bitwise)
