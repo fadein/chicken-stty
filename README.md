@@ -101,7 +101,9 @@ You shouldn't need to use this.
 
 ## Version history
 
--   0.9.2 : Ported to CHICKEN 6
+-   1.0 : Add `with-raw-io` and terminal size procedures from Chibi (thanks, dieggsy!)
+-   0.9.2 : Bugfixes
+-   0.9.1 : Ported to CHICKEN 6
 -   0.9 : Improve raw serial configuration, make ixon control the IXON flag (thanks, @crzcrz!)
 -   0.8.1 : Fixed another misplaced parentheses
 -   0.8 : Add cond-expanded flag-to-baud/baud-to-flag to reference only existing baud defines on macosx

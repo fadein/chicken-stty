@@ -2,7 +2,7 @@
 ;;
 ;; Copyright (c) 2007-2016 Alex Shinn.  All rights reserved.
 ;; BSD-style license: http://synthcode.com/license.txt
-;; Updates Copyright (c) 2016-2025 Erik Falor.  All rights reserved.
+;; Updates Copyright (c) 2016-2026 Erik Falor.  All rights reserved.
 
 ;;;;; High-level interface
 ;;
@@ -69,8 +69,9 @@
     #f))
 
 (module stty
- (stty with-stty
+ (stty with-stty with-raw-io
   get-terminal-attributes set-terminal-attributes!
+  get-terminal-width get-terminal-dimensions
   make-term-attrs free-term-attrs
   term-attrs-iflag term-attrs-iflag-set!
   term-attrs-oflag term-attrs-oflag-set!
@@ -109,7 +110,9 @@
       foreigners)))
 
 (declare (foreign-declare "#include <termios.h>\n"))
+(declare (foreign-declare "#include <sys/ioctl.h>\n"))
 (declare (foreign-declare "typedef struct termios struct_termios;\n"))
+(declare (foreign-declare "typedef struct winsize struct_winsize;\n"))
 
 ;; Use the platform c_cc size for accessor bounds.
 (define-foreign-variable NCCS int "NCCS")
@@ -123,6 +126,29 @@
   (unsigned-long c_lflag term-attrs-lflag term-attrs-lflag-set!)
   (unsigned-char (c_cc NCCS) term-attrs-cc term-attrs-cc-set!)
   )
+
+(define-foreign-record-type (winsize struct_winsize)
+  (constructor: make-winsize)
+  (destructor: free-winsize)
+  (unsigned-short ws_row winsize-row)
+  (unsigned-short ws_col winsize-col))
+
+(define-foreign-type port-or-fileno
+  int
+  (lambda (x)
+    (if (integer? x)
+        x
+        (port->fileno x))))
+
+(define (ioctl port op)
+  (let ((winsize (make-winsize)))
+    (and (zero?
+          ((foreign-lambda* int ((port-or-fileno port) (unsigned-long op) (c-pointer t))
+             "C_return(ioctl(port, op, (struct winsize*) t));")
+           port
+           op
+           winsize))
+         winsize)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; constants
@@ -251,6 +277,7 @@
 (define-foreign-variable VMIN unsigned-long)
 (define-foreign-variable VTIME unsigned-long)
 
+(define TIOCGWINSZ (foreign-value "TIOCGWINSZ" int))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; basic interface
 
@@ -663,9 +690,8 @@
     (set-terminal-attributes! port TCSANOW attr)
     (free-term-attrs attr)))
 
-(define (with-stty setting thunk)
-  (let* ((port (current-input-port))
-         (orig-attrs (get-terminal-attributes port)))
+(define (with-stty setting thunk #!optional (port (current-input-port)))
+  (let* ((orig-attrs (get-terminal-attributes port)))
     (if orig-attrs
         (dynamic-wind
           (lambda ()
@@ -676,4 +702,13 @@
             (free-term-attrs orig-attrs)))
         (thunk))))
 
-)
+(define (with-raw-io thunk #!optional (port (current-input-port)))
+  (with-stty '(not icanon isig echo) thunk port))
+
+(define (get-terminal-width #!optional (port (current-input-port)))
+  (let ((ws (ioctl port TIOCGWINSZ)))
+    (and ws (winsize-col ws))))
+
+(define (get-terminal-dimensions #!optional (port (current-input-port)))
+  (let ((ws (ioctl port TIOCGWINSZ)))
+    (and ws (list (winsize-col ws) (winsize-row ws))))))
